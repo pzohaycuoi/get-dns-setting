@@ -23,11 +23,9 @@ $comInfoCollection = @()
 # Loop through the result and get attribute inside each row
 foreach ($row in $colResults) {
   $objComputer = $row.GetDirectoryEntry()
-  
   # get network apdater configuration
   $networkAdapter = Get-WmiObject -Class Win32_NetworkAdapterConfiguration `
     -ComputerName $objComputer.Name -Filter "IPEnabled='True'"
-    
   # object to hold computer info
   $computer = [PSCustomObject]@{
     ComputerName    = $objComputer.Name[0]
@@ -60,19 +58,16 @@ foreach ($computer in $comInfoCollection) {
     ComputerName    = $computer.ComputerName
     OperatingSystem = $computer.OperatingSystem
   }
-  
   # create new object and append IP into the computer object
   for ($i = 0; $i -lt $maxCountIp; $i++) {
     $keyName = "IPAddress$($i)"
     $objComputer | Add-Member NoteProperty $keyName $computer.IPAddresses[$i]
   }
-  
   # create new object and append dns server into the computer object
   for ($i = 0; $i -lt $maxCountDnsServ; $i++) {
     $keyName = "DNSServer$($i)"
     $objComputer | Add-Member NoteProperty $keyName $computer.dnsServers[$i]
   }
-  
   # output data to file and put some text on the console
   $objComputer | Export-Csv -Path $dataFile.FullName -Force -Append -NoTypeInformation
   Write-Output $objComputer 
